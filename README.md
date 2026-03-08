@@ -12,30 +12,90 @@ A full-featured project management tool built for digital marketing teams. Manag
 
 ## Features
 
-- **Project Management** — Create, edit, and track digital marketing projects with client details, contacts, social media links, key dates, and notes
-- **Task Management** — Kanban-style task board with priorities, statuses, effort levels, task types, due dates, subtasks, and assignees
-- **Task Templates** — Reusable template groups for bulk task creation on new projects
-- **Role-Based Access** — Owner, Manager, and Employee roles with granular permissions
-- **Team Management** — Organize users into teams with project assignments
-- **External API/Webhook** — REST API endpoint for creating projects from external tools (Zapier, Make, etc.)
-- **Rich Text Notes** — HTML editor for project notes with formatting support
+### Project Management
+
+- Full CRUD for projects with auto-saving edits
+- Client details panel with point of contact, additional contacts, business info, and industry
+- Social media links (Facebook, Instagram, LinkedIn, X/Twitter, YouTube, TikTok, Google Business Profile)
+- Key dates: website launch, SEO start, project closed
+- Project-level notes (timestamped, per-user, add/delete)
+- Project statuses: Active Lead, Not Started, Active, Paused, Closed, Failed Lead
+- Priority levels: Trivial, Low, Medium, High, Critical
+- Sidebar search with priority and status filters
+
+### Task Management
+
+- Tasks embedded per-project with full CRUD
+- Task detail modal with two-column layout (details + activity/comments)
+- 7 task statuses grouped into Not Started, Active, and Closed
+- 5 priority levels, 6 effort levels (Easy → Epic), 9 task types (Bug, Onboarding, Followup, Feature, Design, Research, Content, SEO, Misc)
+- Subtasks with progress bar and checkboxes
+- Assignees, due dates with urgency indicators (overdue, today, tomorrow, 3-day, 7-day)
+- Activity tracking — automatic change logging for status, priority, effort, assignee, due date, and title
+- Comments with user photos, timestamps, and URL auto-linking
+- **3 layout modes:** Table, Cards (Kanban-style by status group), Calendar
+- **Bulk actions toolbar** — set status, priority, effort, assignee, task type, or due date for multiple selected tasks
+
+### Views
+
+- **Master Board** — All tasks across all projects (Owner/Manager only), with Table/Cards/Calendar layouts
+- **Project View** — Individual project detail + tasks
+- **Employee View** — Browse a specific employee's assigned tasks
+- **My Tasks** — Employee's own tasks across all projects
+- **My Projects** — Projects filtered to the current employee's assignments
+
+### Task Templates
+
+- Reusable template groups with subtask definitions
+- Apply an entire template group to a project at once for bulk task creation
+
+### Team & User Management
+
+- Create/delete teams, add/remove members from registered users
+- Role management (Owner only): assign Owner, Manager, or Employee roles
+
+### Branding / Customization
+
+- Configurable app name, logo (text or image URL), and tagline
+- Live preview in settings, applied to sidebar header and login screen
+
+### External API / Webhook
+
+- REST API endpoint for creating projects from external tools (Zapier, Make, etc.)
+
+### Rich Text Editing
+
+- HTML editor for project descriptions and task descriptions with bold, italic, underline, strikethrough, lists, links, headings, and clear formatting
 
 ## Project Structure
 
 ```
 ├── src/
-│   ├── App.jsx          # Main application (single-file React app)
-│   └── main.jsx         # Entry point
+│   ├── App.jsx              # Main application (~9200-line single-file React app)
+│   └── main.jsx             # Entry point
 ├── api/
-│   └── create-project.js  # Vercel serverless function (webhook API)
-├── firebase.js          # Firebase config, auth, and Firestore helpers
-├── index.html           # HTML shell
-├── vite.config.js       # Vite configuration
-├── vercel.json          # Vercel routing (SPA + API rewrites)
+│   └── create-project.js    # Vercel serverless function (webhook API)
+├── assets/
+│   └── favicon.png          # App favicon
+├── firebase.js              # Firebase config, auth, and Firestore helpers
+├── index.html               # HTML shell
+├── vite.config.js           # Vite configuration
+├── vercel.json              # Vercel routing (SPA + API rewrites)
 ├── package.json
-├── .env.example         # Environment variable template
+├── .env.example             # Environment variable template
 └── firebase-setup-guide.md  # Full Firebase/Vercel setup guide
 ```
+
+## Firestore Collections
+
+| Collection / Doc | Path                     | Purpose                                               |
+| ---------------- | ------------------------ | ----------------------------------------------------- |
+| Users            | `users/{uid}`            | Registered user profiles (name, email, photo, role)   |
+| Employees        | `employees/{id}`         | Employee records linked to users by email             |
+| Projects         | `projects/{id}`          | Projects with embedded `tasks[]` and `projectNotes[]` |
+| Teams            | `teams/{id}`             | Teams with name and `members[]` (user IDs)            |
+| Task Templates   | `settings/taskTemplates` | Template groups, each containing template definitions |
+| Branding         | `settings/branding`      | App name, logo, tagline customization                 |
 
 ## Getting Started
 
@@ -165,6 +225,8 @@ POST https://your-domain.vercel.app/api/create-project
 | `Content-Type` | `application/json`          |
 | `X-API-Key`    | Your `API_SECRET_KEY` value |
 
+> **Note:** You can also use `Authorization: Bearer <your-api-secret-key>` instead of `X-API-Key`.
+
 ### Example Request
 
 ```bash
@@ -194,33 +256,33 @@ curl -X POST https://your-domain.vercel.app/api/create-project \
 
 ### Supported Fields
 
-| Field                | Type   | Required | Description                                                  |
-| -------------------- | ------ | -------- | ------------------------------------------------------------ |
-| `projectName`        | string | **Yes**  | Project / business name                                      |
-| `projectPriority`    | string | No       | `trivial`, `low`, `medium`, `high`, `critical`               |
-| `projectStatus`      | string | No       | `not_started`, `active`, `on_hold`, `completed`, `cancelled` |
-| `projectAssignee`    | string | No       | User ID of the assignee                                      |
-| `industry`           | string | No       | Business industry                                            |
-| `pointOfContact`     | string | No       | Primary contact name                                         |
-| `pocEmail`           | string | No       | Primary contact email                                        |
-| `pocPhone`           | string | No       | Primary contact phone                                        |
-| `bizEmail`           | string | No       | Business email                                               |
-| `bizPhone`           | string | No       | Business phone                                               |
-| `address`            | string | No       | Business address                                             |
-| `website`            | string | No       | Website URL                                                  |
-| `googleDoc`          | string | No       | Google Doc link                                              |
-| `facebook`           | string | No       | Facebook URL                                                 |
-| `instagram`          | string | No       | Instagram handle                                             |
-| `linkedin`           | string | No       | LinkedIn URL                                                 |
-| `twitter`            | string | No       | X/Twitter handle                                             |
-| `youtube`            | string | No       | YouTube URL                                                  |
-| `tiktok`             | string | No       | TikTok handle                                                |
-| `gbp`                | string | No       | Google Business Profile URL                                  |
-| `websiteLaunchDate`  | string | No       | Date (YYYY-MM-DD or ISO 8601)                                |
-| `seoStartDate`       | string | No       | Date (YYYY-MM-DD or ISO 8601)                                |
-| `projectClosedDate`  | string | No       | Date (YYYY-MM-DD or ISO 8601)                                |
-| `notes`              | string | No       | HTML or plain text notes                                     |
-| `additionalContacts` | array  | No       | Array of `{ name, email, phone }`                            |
+| Field                | Type   | Required | Description                                                                                   |
+| -------------------- | ------ | -------- | --------------------------------------------------------------------------------------------- |
+| `projectName`        | string | **Yes**  | Project / business name                                                                       |
+| `projectPriority`    | string | No       | `trivial`, `low`, `medium`, `high`, `critical`                                                |
+| `projectStatus`      | string | No       | `active_lead`, `not_started`, `active`, `paused`, `closed`, `failed_lead` (default: `active`) |
+| `projectAssignee`    | string | No       | User ID of the assignee                                                                       |
+| `industry`           | string | No       | Business industry                                                                             |
+| `pointOfContact`     | string | No       | Primary contact name                                                                          |
+| `pocEmail`           | string | No       | Primary contact email                                                                         |
+| `pocPhone`           | string | No       | Primary contact phone                                                                         |
+| `bizEmail`           | string | No       | Business email                                                                                |
+| `bizPhone`           | string | No       | Business phone                                                                                |
+| `address`            | string | No       | Business address                                                                              |
+| `website`            | string | No       | Website URL                                                                                   |
+| `googleDoc`          | string | No       | Google Doc link                                                                               |
+| `facebook`           | string | No       | Facebook URL                                                                                  |
+| `instagram`          | string | No       | Instagram handle                                                                              |
+| `linkedin`           | string | No       | LinkedIn URL                                                                                  |
+| `twitter`            | string | No       | X/Twitter handle                                                                              |
+| `youtube`            | string | No       | YouTube URL                                                                                   |
+| `tiktok`             | string | No       | TikTok handle                                                                                 |
+| `gbp`                | string | No       | Google Business Profile URL                                                                   |
+| `websiteLaunchDate`  | string | No       | Date (YYYY-MM-DD or ISO 8601)                                                                 |
+| `seoStartDate`       | string | No       | Date (YYYY-MM-DD or ISO 8601)                                                                 |
+| `projectClosedDate`  | string | No       | Date (YYYY-MM-DD or ISO 8601)                                                                 |
+| `notes`              | string | No       | HTML or plain text notes                                                                      |
+| `additionalContacts` | array  | No       | Array of `{ name, email, phone }`                                                             |
 
 ### Testing the Webhook Locally
 
@@ -239,13 +301,13 @@ curl -X POST http://localhost:3000/api/create-project \
 
 ## User Roles
 
-| Role         | Permissions                                                             |
-| ------------ | ----------------------------------------------------------------------- |
-| **Owner**    | Full access — manage users, projects, tasks, teams, templates, settings |
-| **Manager**  | Create/edit/delete projects and tasks, manage teams                     |
-| **Employee** | View assigned tasks, update task status only                            |
+| Role         | Permissions                                                                    |
+| ------------ | ------------------------------------------------------------------------------ |
+| **Owner**    | Full access — manage users, roles, projects, tasks, teams, templates, branding |
+| **Manager**  | Create/edit/delete projects and tasks, manage teams and templates              |
+| **Employee** | View assigned projects/tasks, create tasks, update own task status             |
 
-The owner is hardcoded to `jackhe@asolace.com`. Only the owner can change user roles.
+The first owner is hardcoded to `jackhe@asolace.com`. Only the owner can change user roles and access branding settings.
 
 ## Scripts
 
